@@ -1,15 +1,22 @@
+// Importing all the modules
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const bodyParser = require('body-parser');
+const passport = require('passport');
+const cors = require('cors');
 
+// Importing Configs
+const config = require('./config/database');
+
+// Importing all the Routes
 const users = require('./routers/user');
+const auth = require('./routers/auth');
 
 //Import the mongoose module
 const mongoose = require('mongoose');
 //Set up default mongoose connection
-const mongoDB = 'mongodb://127.0.0.1/text_editor';
-mongoose.connect(mongoDB);
+mongoose.connect(config.database);
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
 //Get the default connection
@@ -23,14 +30,19 @@ db.once('open', function() {
 // const userList = [];
 const connections = [];
 
+// App configurations
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+// app.use(cors);
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+// Adding all the routes
 app.use('/users', users);
+app.use('/auth', auth);
 
 io.on('connection', function(socket) {
   connections.push(socket);

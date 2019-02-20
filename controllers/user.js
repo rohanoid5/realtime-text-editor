@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+require('../config/passport')(passport);
+
+const config = require('../config/database');
 
 const userController = {};
 
 // Show list of users
-userController.list = function(req, res) {
-  User.find({}).exec(function(err, users) {
+userController.list = (req, res) => {
+  User.find({}).exec((err, users) => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
     } else {
@@ -15,8 +20,8 @@ userController.list = function(req, res) {
 };
 
 // Show user by username
-userController.show = function(req, res) {
-  User.findOne({ username: req.params.username }).exec(function(err, user) {
+userController.show = (req, res) => {
+  User.findOne({ username: req.params.username }).exec((err, user) => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
     } else {
@@ -30,15 +35,15 @@ userController.show = function(req, res) {
 };
 
 // Create new user
-userController.create = function(req, res) {
+userController.create = (req, res) => {
   // res.render('../views/users/create');
 };
 
 // Save new user
-userController.save = function(req, res) {
+userController.save = (req, res) => {
   var user = new User(req.body);
 
-  user.save(function(err) {
+  user.save(err => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
     } else {
@@ -47,8 +52,8 @@ userController.save = function(req, res) {
   });
 };
 
-// Update an user
-userController.update = function(req, res) {
+// Update a user
+userController.update = (req, res) => {
   User.findOne({ username: req.params.username }, (err, user) => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
@@ -73,8 +78,8 @@ userController.update = function(req, res) {
   });
 };
 
-// Delete an user
-userController.delete = function(req, res) {
+// Delete a user
+userController.delete = (req, res) => {
   User.remove({ username: req.params.username }, err => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
@@ -83,6 +88,35 @@ userController.delete = function(req, res) {
         user: 'User has been deleted',
         message: 'Operation successful!'
       });
+    }
+  });
+};
+
+// Login a user
+userController.login = (req, res) => {
+  User.findOne({ username: req.body.username }, (err, user) => {
+    if (err) {
+      res.status(400).json({ err, message: 'Operation failed!' });
+    } else {
+      if (!user) {
+        res
+          .status(400)
+          .json({ message: 'Authentication failed. User not found.' });
+      } else {
+        // check if password matches
+        user.comparePassword(req.body.password, (err, isMatch) => {
+          if (isMatch && !err) {
+            // if user is found and password is right create a token
+            const token = jwt.sign(user.toJSON(), config.secret);
+            // return the information including token as JSON
+            res.status(200).json({ success: true, token: 'JWT ' + token });
+          } else {
+            res
+              .status(400)
+              .json({ message: 'Authentication failed. Wrong password.' });
+          }
+        });
+      }
     }
   });
 };
