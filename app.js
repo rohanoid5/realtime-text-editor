@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 // app.use(cors);
 
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
@@ -57,8 +57,15 @@ io.on('connection', function(socket) {
   socket.on('chat message', function(msg) {
     io.emit('chat message', msg);
   });
+
+  socket.on('subscribeToTimer', interval => {
+    console.log('client is subscribing to timer with interval ', interval);
+    setInterval(() => {
+      socket.emit('timer', new Date());
+    }, interval);
+  });
 });
 
-http.listen(3000, function() {
-  console.log('listening on http://localhost:3000');
+http.listen(8000, function() {
+  console.log('listening on http://localhost:8000');
 });
