@@ -27,7 +27,7 @@ db.once('open', function() {
   console.log('Database connected!');
 });
 
-// const userList = [];
+const userList = [];
 const connections = [];
 
 // App configurations
@@ -51,11 +51,19 @@ io.on('connection', function(socket) {
   // Disconnected
   socket.on('disconnect', data => {
     connections.splice(connections.indexOf(socket), 1);
+    userList.splice(userList.indexOf(socket.username), 1);
     console.log(`Disconnected: ${connections.length} sockets connected`);
   });
 
-  socket.on('chat message', function(msg) {
+  socket.on('chat message', msg => {
     io.emit('chat message', msg);
+  });
+
+  socket.on('add user', user => {
+    socket.user = user;
+    userList.push(socket.user);
+    updateUsersList();
+    console.log(userList);
   });
 
   socket.on('subscribeToTimer', interval => {
@@ -64,6 +72,8 @@ io.on('connection', function(socket) {
       socket.emit('timer', new Date());
     }, interval);
   });
+
+  const updateUsersList = () => io.sockets.emit('get users', userList);
 });
 
 http.listen(8000, function() {
