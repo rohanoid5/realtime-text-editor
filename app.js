@@ -11,12 +11,16 @@ const config = require('./config/database');
 
 // Importing all the Routes
 const users = require('./routers/user');
+const collaborators = require('./routers/collaborator');
 const auth = require('./routers/auth');
 
 //Import the mongoose module
 const mongoose = require('mongoose');
 //Set up default mongoose connection
-mongoose.connect(config.database);
+mongoose.connect(config.database, {
+  useNewUrlParser: true,
+  useCreateIndex: true
+});
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
 //Get the default connection
@@ -42,6 +46,7 @@ app.get('/', (req, res) => {
 
 // Adding all the routes
 app.use('/users', users);
+app.use('/collaborators', collaborators);
 app.use('/auth', auth);
 
 io.on('connection', function(socket) {
