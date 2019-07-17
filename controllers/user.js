@@ -1,9 +1,9 @@
 const User = require('../models/user');
+const Collaborator = require('../models/collaborator');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-require('../config/passport')(passport);
-
 const config = require('../config/database');
+require('../config/passport')(passport);
 
 const userController = {};
 
@@ -79,7 +79,7 @@ userController.update = (req, res) => {
 
 // Delete a user
 userController.delete = (req, res) => {
-  User.remove({ username: req.params.username }, err => {
+  User.deleteOne({ _id: req.params.id }, err => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
     } else {
@@ -106,7 +106,9 @@ userController.login = (req, res) => {
         user.comparePassword(req.body.password, (err, isMatch) => {
           if (isMatch && !err) {
             // if user is found and password is right create a token
-            const token = jwt.sign(user.toJSON(), config.secret);
+            const token = jwt.sign(user.toJSON(), config.secret, {
+              expiresIn: 604800
+            });
             // return the information including token as JSON
             res.status(200).json({ success: true, token: 'JWT ' + token });
           } else {

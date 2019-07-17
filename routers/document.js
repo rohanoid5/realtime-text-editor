@@ -1,70 +1,78 @@
 const express = require('express');
 const router = express.Router();
-const user = require('../controllers/user');
+const document = require('../controllers/document');
 const passport = require('passport');
 const util = require('../util');
 const getToken = util.getToken;
+require('../config/passport')(passport);
 
-// Get all users
+// Get all documents
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     const token = getToken(req.headers);
     if (token) {
-      user.list(req, res);
+      document.list(req, res);
     } else {
       res.status(400).send({ message: 'Unauthorized request.' });
     }
   }
 );
 
-// Get a single user
+// Get a single document
 router.get(
-  '/:username',
+  '/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     const token = getToken(req.headers);
     if (token) {
-      user.show(req, res);
+      document.show(req, res);
     } else {
       res.status(400).send({ message: 'Unauthorized request.' });
     }
   }
 );
 
-// Save a user
+// Save a document
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     const token = getToken(req.headers);
     if (token) {
-      user.save(req, res);
+      document.save(req, res);
     } else {
       res.status(400).send({ message: 'Unauthorized request.' });
     }
   }
 );
 
-// Edit a user
-router.post('/:username', function(req, res) {
+// Edit a document
+router.post('/:id', passport.authenticate('jwt', { session: false }), function(
+  req,
+  res
+) {
   const token = getToken(req.headers);
   if (token) {
-    user.update(req, res);
+    document.update(req, res);
   } else {
     res.status(400).send({ message: 'Unauthorized request.' });
   }
 });
 
-// Delete a user
-router.delete('/:username', function(req, res, next) {
-  const token = getToken(req.headers);
-  if (token) {
-    user.delete(req, res);
-  } else {
-    res.status(400).send({ message: 'Unauthorized request.' });
+// Delete a document
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  function(req, res) {
+    const token = getToken(req.headers);
+    if (token) {
+      document.delete(req, res);
+    } else {
+      res.status(400).send({ message: 'Unauthorized request.' });
+    }
   }
-});
+);
 
 module.exports = router;

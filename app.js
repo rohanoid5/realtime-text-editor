@@ -12,6 +12,7 @@ const config = require('./config/database');
 // Importing all the Routes
 const users = require('./routers/user');
 const collaborators = require('./routers/collaborator');
+const documents = require('./routers/document');
 const auth = require('./routers/auth');
 
 //Import the mongoose module
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
 // Adding all the routes
 app.use('/users', users);
 app.use('/collaborators', collaborators);
+app.use('/documents', documents);
 app.use('/auth', auth);
 
 io.on('connection', function(socket) {

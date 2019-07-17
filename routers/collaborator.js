@@ -49,7 +49,10 @@ router.post(
 );
 
 // Edit a collaborator
-router.post('/:id', function(req, res) {
+router.post('/:id', passport.authenticate('jwt', { session: false }), function(
+  req,
+  res
+) {
   const token = getToken(req.headers);
   if (token) {
     collaborator.update(req, res);
@@ -59,12 +62,17 @@ router.post('/:id', function(req, res) {
 });
 
 // Delete a collaborator
-router.delete('/:id', function(req, res, next) {
-  if (token) {
-    collaborator.delete(req, res);
-  } else {
-    res.status(400).send({ message: 'Unauthorized request.' });
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  function(req, res) {
+    const token = getToken(req.headers);
+    if (token) {
+      collaborator.delete(req, res);
+    } else {
+      res.status(400).send({ message: 'Unauthorized request.' });
+    }
   }
-});
+);
 
 module.exports = router;

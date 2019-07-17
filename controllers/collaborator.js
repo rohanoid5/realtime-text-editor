@@ -104,12 +104,12 @@ collaboratorController.update = (req, res) => {
 
 // Delete a collaborator
 collaboratorController.delete = (req, res) => {
-  Collaborator.remove({ _id: req.params.id }, err => {
+  Collaborator.deleteOne({ _id: req.params.id }, err => {
     if (err) {
       res.status(400).json({ err, message: 'Operation failed!' });
     } else {
       res.status(200).json({
-        user: 'Collaborator has been deleted',
+        collaborator: 'Collaborator has been deleted',
         message: 'Operation successful!'
       });
     }
