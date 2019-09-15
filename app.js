@@ -2,6 +2,7 @@
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const socketIO = require('./socket');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const cors = require('cors');
@@ -32,9 +33,6 @@ db.once('open', function() {
   console.log('Database connected!');
 });
 
-const userList = [];
-const connections = [];
-
 // App configurations
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,37 +49,14 @@ app.use('/collaborators', collaborators);
 app.use('/documents', documents);
 app.use('/auth', auth);
 
-io.on('connection', function(socket) {
-  connections.push(socket);
-  console.log(`Connected: ${connections.length} sockets connected.`);
-
-  // Disconnected
-  socket.on('disconnect', data => {
-    connections.splice(connections.indexOf(socket), 1);
-    userList.splice(userList.indexOf(socket.username), 1);
-    console.log(`Disconnected: ${connections.length} sockets connected`);
-  });
-
-  socket.on('chat message', msg => {
-    io.emit('chat message', msg);
-  });
-
-  socket.on('add user', user => {
-    socket.user = user;
-    userList.push(socket.user);
-    updateUsersList();
-    console.log(userList);
-  });
-
-  socket.on('subscribeToTimer', interval => {
-    console.log('client is subscribing to timer with interval ', interval);
-    setInterval(() => {
-      socket.emit('timer', new Date());
-    }, interval);
-  });
-
-  const updateUsersList = () => io.sockets.emit('get users', userList);
-});
+// socketIO(http);
+// const Socket = require('./socket/Socket');
+// const socket = new Socket(io, 'dock');
+// socket.connect().then(res => {
+//   if (res.connected) {
+//     socket.emit();
+//   }
+// });
 
 http.listen(8000, function() {
   console.log('listening on http://localhost:8000');
