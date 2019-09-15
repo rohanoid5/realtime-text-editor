@@ -31,7 +31,6 @@ documentController.show = (req, res) => {
 
 // Save new document
 documentController.save = (req, res) => {
-  console.log(req.user);
   let document = new Document({
     author: req.user._id,
     collaborators: [],
@@ -46,7 +45,7 @@ documentController.save = (req, res) => {
   });
 };
 
-// Update a collaborator
+// Update a document
 documentController.update = (req, res) => {
   Document.findById({ _id: req.params.id }, (err, document) => {
     if (err) {
