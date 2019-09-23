@@ -6,6 +6,7 @@ export const COLLABORATORS = '/collaborators';
 export const DOCUMENTS = '/documents';
 export const AUTHENTICATION = '/auth';
 export const SIGNIN = '/signin';
+export const SIGNUP = '/signup';
 
 // Action Types
 export const REGISTER_USER = 'ADD_NEW_USER';
