@@ -34,10 +34,11 @@ db.once('open', function() {
 });
 
 // App configurations
+app.use(cors());
+app.options('*', cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
-// app.use(cors);
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');

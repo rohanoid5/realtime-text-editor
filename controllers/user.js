@@ -100,7 +100,10 @@ userController.login = (req, res) => {
       if (!user) {
         res
           .status(400)
-          .json({ message: 'Authentication failed. User not found.' });
+          .json({
+            success: false,
+            message: 'Authentication failed. User not found.'
+          });
       } else {
         // check if password matches
         user.comparePassword(req.body.password, (err, isMatch) => {
@@ -114,7 +117,10 @@ userController.login = (req, res) => {
           } else {
             res
               .status(400)
-              .json({ message: 'Authentication failed. Wrong password.' });
+              .json({
+                success: false,
+                message: 'Authentication failed. Wrong password.'
+              });
           }
         });
       }
