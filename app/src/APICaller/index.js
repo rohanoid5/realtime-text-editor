@@ -88,7 +88,7 @@ const getUserByUsername = (jwt, username) => {
   });
 };
 
-const getAllDocuemnts = jwt => {
+const getAllDocuemnts = (jwt, author) => {
   const headers = new Headers({
     Authorization: jwt
   });
@@ -97,14 +97,14 @@ const getAllDocuemnts = jwt => {
     headers
   };
   return new Promise((resolve, reject) => {
-    fetch(`${LOCAL_BASE_URL}${DOCUMENTS}`, fetchData)
+    fetch(`${LOCAL_BASE_URL}${DOCUMENTS}?author=${author}`, fetchData)
       .then(jsonify)
       .then(data => resolve(data))
       .catch(err => reject(err));
   });
 };
 
-const getDocumentById = (jwt, id) => {
+const getDocumentById = (jwt, id, author) => {
   const headers = new Headers({
     Authorization: jwt
   });
@@ -113,7 +113,7 @@ const getDocumentById = (jwt, id) => {
     headers
   };
   return new Promise((resolve, reject) => {
-    fetch(`${LOCAL_BASE_URL}${DOCUMENTS}/${id}`, fetchData)
+    fetch(`${LOCAL_BASE_URL}${DOCUMENTS}/${id}?author=${author}`, fetchData)
       .then(jsonify)
       .then(data => resolve(data))
       .catch(err => reject(err));
