@@ -10,3 +10,4 @@
 - [ ] Make APIs for Collboration
 - [ ] Establish different endpoints for Socket connections
 - [ ] Come up with a proper structure for Socket Communication
+- [ ] Promisify all mongoose calls
