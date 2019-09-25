@@ -36,17 +36,17 @@ collaboratorController.show = (req, res) => {
 
 // Save new collaborator
 collaboratorController.save = (req, res) => {
-  let collaboratorId = new Types.ObjectId();
-  let { query } = req;
-  if (query && query.userId) {
-    User.findById(query.userId)
+  const { query } = req;
+  const { userId, documentId } = query;
+  if (query && userId) {
+    User.findById(userId)
       .exec()
       .then(user => {
         if (!user) {
           res.status(400).json({ message: 'Invalid user_id provided' });
         } else {
-          if (query && query.document) {
-            return Document.findOne({ _id: query.document }).exec();
+          if (query && documentId) {
+            return Document.findOne({ _id: documentId }).exec();
           } else {
             res
               .status(400)
@@ -58,22 +58,20 @@ collaboratorController.save = (req, res) => {
         if (!document) {
           res.status(400).json({ message: 'Invalid document Id provided' });
         } else {
-          if (document.collaborators.indexOf(collaboratorId) === -1) {
-            document.collaborators.push(collaboratorId);
+          if (document.collaborators.indexOf(userId) === -1) {
+            document.collaborators.push(userId);
             return document.save();
           } else {
-            res
-              .status(400)
-              .json({
-                message: 'Collaborator for this document already exists'
-              });
+            res.status(400).json({
+              message: 'Collaborator for this document already exists'
+            });
           }
         }
       })
       .then(() => {
         let collaborator = new Collaborator({
-          _id: collaboratorId,
-          user: query.userId,
+          _id: userId,
+          document: documentId,
           ...req.body
         });
         return collaborator.save();
@@ -92,120 +90,58 @@ collaboratorController.save = (req, res) => {
   }
 };
 
-// collaboratorController.save = (req, res) => {
-//   User.findById(req.body.user, (err, user) => {
-//     if (err) {
-//       res.status(400).json({ err, message: 'Operation failed!' });
-//     } else {
-//       if (user) {
-//         Collaborator.findOne({ user: user._id }, (err, foundCollaborator) => {
-//           if (err) {
-//             res.status(400).json({ err, message: 'Operation failed!' });
-//           } else {
-//             if (foundCollaborator) {
-//               res
-//                 .status(400)
-//                 .json({ message: 'Collaborator with same id already exists' });
-//             } else {
-//               let collaborator = new Collaborator({
-//                 _id: new Types.ObjectId(),
-//                 user: user._id,
-//                 ...req.body
-//               });
-//               if (req.query && req.query.document) {
-//                 Document.findOne(
-//                   { _id: req.query.document },
-//                   (err, foundDocument) => {
-//                     if (err) {
-//                       res
-//                         .status(400)
-//                         .json({ err, message: 'Operation failed!' });
-//                     } else {
-//                       if (!foundDocument) {
-//                         res
-//                           .status(400)
-//                           .json({ message: 'Invalid document Id provided' });
-//                       } else {
-//                         foundDocument.collaborators.push(collaborator._id);
-//                         foundDocument.save(err => {
-//                           if (err) {
-//                             res
-//                               .status(400)
-//                               .json({ err, message: 'Operation failed!' });
-//                           } else {
-//                             collaborator.save(err => {
-//                               if (err) {
-//                                 res
-//                                   .status(400)
-//                                   .json({ err, message: 'Operation failed!' });
-//                               } else {
-//                                 res.status(200).json({
-//                                   collaborator,
-//                                   message: 'Operation successful!'
-//                                 });
-//                               }
-//                             });
-//                           }
-//                         });
-//                       }
-//                     }
-//                   }
-//                 );
-//               } else {
-//                 res
-//                   .status(400)
-//                   .json({ message: "You didn't provide a document Id" });
-//               }
-//             }
-//           }
-//         });
-//       } else {
-//         res.status(400).json({ message: 'Invalid user_id provided' });
-//       }
-//     }
-//   });
-// };
-
 // Update a collaborator
 collaboratorController.update = (req, res) => {
-  Collaborator.findById({ _id: req.params.id }, (err, collaborator) => {
-    if (err) {
-      res.status(400).json({ err, message: 'Operation failed!' });
-    } else {
+  Collaborator.findById(req.params.id)
+    .exec()
+    .then(collaborator => {
       if (collaborator) {
         collaborator.user = req.body.user || collaborator.user;
         collaborator.read = req.body.read || collaborator.read;
         collaborator.write = req.body.write || collaborator.write;
         collaborator.admin = req.body.admin || collaborator.admin;
-        collaborator.save((err, newCollaborator) => {
-          if (err) {
-            res.status(400).json({ err, message: 'Operation failed!' });
-          } else {
-            res.status(200).json({
-              collaborator: newCollaborator,
-              message: 'Operation successful!'
-            });
-          }
-        });
+        return collaborator.save();
       } else {
         res.status(400).json({ message: 'No collaborator found' });
       }
-    }
-  });
+    })
+    .then(collaborator => {
+      res.status(200).json({
+        collaborator: collaborator,
+        message: 'Operation successful!'
+      });
+    })
+    .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
 };
 
 // Delete a collaborator
 collaboratorController.delete = (req, res) => {
-  Collaborator.deleteOne({ _id: req.params.id }, err => {
-    if (err) {
-      res.status(400).json({ err, message: 'Operation failed!' });
-    } else {
+  const collaboratorId = req.params.id;
+  Collaborator.findById({ _id: collaboratorId })
+    .exec()
+    .then(collaborator => {
+      if (!collaborator) {
+        res.status(400).json({ message: 'No collaborator found' });
+      } else {
+        return Document.findById(collaborator.document).exec();
+      }
+    })
+    .then(document => {
+      document.collaborators = document.collaborators.filter(id => {
+        return String(id) !== collaboratorId;
+      });
+      return document.save();
+    })
+    .then(() => {
+      return Collaborator.deleteOne({ _id: collaboratorId });
+    })
+    .then(() => {
       res.status(200).json({
         collaborator: 'Collaborator has been deleted',
         message: 'Operation successful!'
       });
-    }
-  });
+    })
+    .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
 };
 
 module.exports = collaboratorController;

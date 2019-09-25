@@ -4,8 +4,8 @@
 - [x] Make APIs for User
 - [x] Make APIs for Documents
 - [x] Make APIs for Collaborators
-- [ ] Restructure the implementation of Collaborators
-- [ ] Couple Collaborators with Documentation
+- [x] Restructure the implementation of Collaborators
+- [x] Couple Collaborators with Documentation
 - [ ] Make overall data more private and secure
 - [ ] Make APIs for Collboration
 - [ ] Establish different endpoints for Socket connections
