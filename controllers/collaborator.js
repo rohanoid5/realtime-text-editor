@@ -43,31 +43,35 @@ collaboratorController.save = (req, res) => {
       .exec()
       .then(user => {
         if (!user) {
-          res.status(400).json({ message: 'Invalid user_id provided' });
+          throw new Error('Invalid user_id provided');
         } else {
           if (query && documentId) {
             return Document.findOne({ _id: documentId }).exec();
           } else {
-            res
-              .status(400)
-              .json({ message: "You didn't provide a document Id" });
+            throw new Error("You didn't provide a document Id");
           }
         }
       })
+      // .catch(err => err)
       .then(document => {
         if (!document) {
-          res.status(400).json({ message: 'Invalid document Id provided' });
+          throw new Error('Invalid document Id provided');
         } else {
-          if (document.collaborators.indexOf(userId) === -1) {
-            document.collaborators.push(userId);
-            return document.save();
+          if (String(document.author) === String(req.user._id)) {
+            if (document.collaborators.indexOf(userId) === -1) {
+              document.collaborators.push(userId);
+              return document.save();
+            } else {
+              throw new Error('Collaborator for this document already exists');
+            }
           } else {
-            res.status(400).json({
-              message: 'Collaborator for this document already exists'
-            });
+            throw new Error(
+              "You've tried to add a collaborator to a document you didn't create."
+            );
           }
         }
       })
+      // .catch(err => err)
       .then(() => {
         let collaborator = new Collaborator({
           _id: userId,
