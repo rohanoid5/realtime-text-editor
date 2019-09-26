@@ -52,7 +52,7 @@ collaboratorController.save = (req, res) => {
           }
         }
       })
-      // .catch(err => err)
+      .catch(err => err.message)
       .then(document => {
         if (!document) {
           throw new Error('Invalid document Id provided');
@@ -71,7 +71,7 @@ collaboratorController.save = (req, res) => {
           }
         }
       })
-      // .catch(err => err)
+      .catch(err => err.message)
       .then(() => {
         let collaborator = new Collaborator({
           _id: userId,
@@ -119,33 +119,69 @@ collaboratorController.update = (req, res) => {
 };
 
 // Delete a collaborator
-collaboratorController.delete = (req, res) => {
+// collaboratorController.delete = (req, res) => {
+//   const collaboratorId = req.params.id;
+//   Collaborator.findById({ _id: collaboratorId })
+//     .exec()
+//     .then(collaborator => {
+//       if (!collaborator) {
+//         throw new Error('No collaborator found');
+//       } else {
+//         return Document.findById(collaborator.document).exec();
+//       }
+//     })
+//     .catch(err => err.message)
+//     .then(document => {
+//       if (document) {
+//         document.collaborators = document.collaborators.filter(id => {
+//           return String(id) !== collaboratorId;
+//         });
+//         return document.save();
+//       } else {
+//         throw new Error('No document found');
+//       }
+//     })
+//     .then(() => {
+//       return Collaborator.deleteOne({ _id: collaboratorId }, err => {
+//         if (err) {
+//           res.status(400).json({ err, message: 'Operation failed!' });
+//         } else {
+//           res.status(200).json({
+//             collaborator: 'Collaborator has been deleted',
+//             message: 'Operation successful!'
+//           });
+//         }
+//       });
+//     })
+//     .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
+// };
+collaboratorController.delete = async (req, res) => {
   const collaboratorId = req.params.id;
-  Collaborator.findById({ _id: collaboratorId })
-    .exec()
-    .then(collaborator => {
-      if (!collaborator) {
-        res.status(400).json({ message: 'No collaborator found' });
+  try {
+    let collaborator = await Collaborator.findById({
+      _id: collaboratorId
+    }).exec();
+    if (collaborator) {
+      let document = await Document.findById(collaborator.document).exec();
+      if (!document) {
+        res.status(400).json({ error: { message: 'No document found' } });
       } else {
-        return Document.findById(collaborator.document).exec();
+        document.collaborators = document.collaborators.filter(id => {
+          return String(id) !== collaboratorId;
+        });
+        await document.save();
+        await Collaborator.deleteOne({ _id: collaboratorId });
+        res.status(200).json({
+          collaborator: 'Collaborator has been deleted',
+          message: 'Operation successful!'
+        });
       }
-    })
-    .then(document => {
-      document.collaborators = document.collaborators.filter(id => {
-        return String(id) !== collaboratorId;
-      });
-      return document.save();
-    })
-    .then(() => {
-      return Collaborator.deleteOne({ _id: collaboratorId });
-    })
-    .then(() => {
-      res.status(200).json({
-        collaborator: 'Collaborator has been deleted',
-        message: 'Operation successful!'
-      });
-    })
-    .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
+    } else {
+      res.status(400).json({ error: { message: 'No collaborator found' } });
+    }
+  } catch (error) {
+    res.status(400).json({ error });
+  }
 };
 
 module.exports = collaboratorController;

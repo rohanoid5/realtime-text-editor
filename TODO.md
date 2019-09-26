@@ -10,4 +10,12 @@
 - [ ] Make APIs for Collboration
 - [ ] Establish different endpoints for Socket connections
 - [ ] Come up with a proper structure for Socket Communication
-- [ ] Promisify all mongoose calls
+- [ ] Use async/await for long mongoose chains
+
+### Things to be done in Client
+
+- [x] Setup Redux
+- [ ] Setup Router
+- [x] Make API Caller lib
+- [ ] Create Login flow
+- [ ] Decide UI
