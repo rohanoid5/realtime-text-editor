@@ -25,7 +25,6 @@ router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    console.log(req.query);
     const token = getToken(req.headers);
     if (token) {
       document.show(req, res);

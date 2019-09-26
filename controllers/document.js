@@ -5,40 +5,30 @@ const documentController = {};
 
 // Show list of documents for an author
 documentController.list = (req, res) => {
-  if (req.query && req.query.author) {
-    Document.find({ author: req.query.author }).exec((err, document) => {
-      if (err) {
-        res.status(400).json({ err, message: 'Operation failed!' });
-      } else {
-        res.status(200).json({ document, message: 'Operation successful!' });
-      }
-    });
-  } else {
-    res.status(200).json({ document: [], message: 'Operation successful!' });
-  }
+  Document.find({ author: req.user._id }).exec((err, document) => {
+    if (err) {
+      res.status(400).json({ err, message: 'Operation failed!' });
+    } else {
+      res.status(200).json({ document, message: 'Operation successful!' });
+    }
+  });
 };
 
 // Show document by _id for an author
 documentController.show = (req, res) => {
-  if (req.query && req.query.author) {
-    Document.findOne({ _id: req.params.id, author: req.query.author }).exec(
-      (err, document) => {
-        if (err) {
-          res.status(400).json({ err, message: 'Operation failed!' });
+  Document.findOne({ _id: req.params.id, author: req.user._id }).exec(
+    (err, document) => {
+      if (err) {
+        res.status(400).json({ err, message: 'Operation failed!' });
+      } else {
+        if (document) {
+          res.status(200).json({ document, message: 'Operation successful!' });
         } else {
-          if (document) {
-            res
-              .status(200)
-              .json({ document, message: 'Operation successful!' });
-          } else {
-            res.status(400).json({ message: 'No document found' });
-          }
+          res.status(400).json({ message: 'No document found' });
         }
       }
-    );
-  } else {
-    res.status(200).json({ message: 'No document found' });
-  }
+    }
+  );
 };
 
 // Save new document
