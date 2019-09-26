@@ -35,126 +35,87 @@ collaboratorController.show = (req, res) => {
 };
 
 // Save new collaborator
-collaboratorController.save = (req, res) => {
+collaboratorController.save = async (req, res) => {
   const { query } = req;
   const { userId, documentId } = query;
-  if (query && userId) {
-    User.findById(userId)
-      .exec()
-      .then(user => {
-        if (!user) {
-          throw new Error('Invalid user_id provided');
-        } else {
-          if (query && documentId) {
-            return Document.findOne({ _id: documentId }).exec();
-          } else {
-            throw new Error("You didn't provide a document Id");
-          }
-        }
-      })
-      .catch(err => err.message)
-      .then(document => {
+  try {
+    if (userId && documentId) {
+      const collaborator = new Collaborator({
+        _id: userId,
+        document: documentId,
+        ...req.body
+      });
+      let user = await User.findById(userId).exec();
+      if (!user) {
+        res.status(400).json({ error: { message: 'No user found' } });
+      } else {
+        let document = await Document.findOne({ _id: documentId }).exec();
         if (!document) {
-          throw new Error('Invalid document Id provided');
+          res.status(400).json({ error: { message: 'No document found' } });
         } else {
           if (String(document.author) === String(req.user._id)) {
             if (document.collaborators.indexOf(userId) === -1) {
               document.collaborators.push(userId);
-              return document.save();
+              await document.save();
+              await collaborator.save();
+              res.status(200).json({
+                collaborator,
+                message: 'Operation successful!'
+              });
             } else {
-              throw new Error('Collaborator for this document already exists');
+              res.status(400).json({
+                error: {
+                  message: 'Collaborator for this document already exists'
+                }
+              });
             }
           } else {
-            throw new Error(
-              "You've tried to add a collaborator to a document you didn't create."
-            );
+            res.status(400).json({
+              error: {
+                message:
+                  "You've tried to add a collaborator to a document you didn't create."
+              }
+            });
           }
         }
-      })
-      .catch(err => err.message)
-      .then(() => {
-        let collaborator = new Collaborator({
-          _id: userId,
-          document: documentId,
-          ...req.body
-        });
-        return collaborator.save();
-      })
-      .then(collaborator => {
-        res.status(200).json({
-          collaborator,
-          message: 'Operation successful!'
-        });
-      })
-      .catch(err => {
-        res.status(400).json({ err, message: 'Operation failed!' });
+      }
+    } else {
+      res.status(400).json({
+        error: { message: "You didn't provide userId &/or documentId" }
       });
-  } else {
-    res.status(400).json({ message: "You didn't provide a user Id" });
+    }
+  } catch (error) {
+    res.status(400).json({
+      error: { message: error.message }
+    });
   }
 };
 
 // Update a collaborator
-collaboratorController.update = (req, res) => {
-  Collaborator.findById(req.params.id)
-    .exec()
-    .then(collaborator => {
-      if (collaborator) {
-        collaborator.user = req.body.user || collaborator.user;
-        collaborator.read = req.body.read || collaborator.read;
-        collaborator.write = req.body.write || collaborator.write;
-        collaborator.admin = req.body.admin || collaborator.admin;
-        return collaborator.save();
-      } else {
-        res.status(400).json({ message: 'No collaborator found' });
-      }
-    })
-    .then(collaborator => {
+collaboratorController.update = async (req, res) => {
+  try {
+    let collaborator = await Collaborator.findById(req.params.id).exec();
+    if (collaborator) {
+      collaborator.user = req.body.user || collaborator.user;
+      collaborator.read = req.body.read || collaborator.read;
+      collaborator.write = req.body.write || collaborator.write;
+      collaborator.admin = req.body.admin || collaborator.admin;
+      await collaborator.save();
       res.status(200).json({
         collaborator: collaborator,
         message: 'Operation successful!'
       });
-    })
-    .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
+    } else {
+      res.status(400).json({ message: 'No collaborator found' });
+    }
+  } catch (error) {
+    res.status(400).json({
+      error: { message: error.message }
+    });
+  }
 };
 
 // Delete a collaborator
-// collaboratorController.delete = (req, res) => {
-//   const collaboratorId = req.params.id;
-//   Collaborator.findById({ _id: collaboratorId })
-//     .exec()
-//     .then(collaborator => {
-//       if (!collaborator) {
-//         throw new Error('No collaborator found');
-//       } else {
-//         return Document.findById(collaborator.document).exec();
-//       }
-//     })
-//     .catch(err => err.message)
-//     .then(document => {
-//       if (document) {
-//         document.collaborators = document.collaborators.filter(id => {
-//           return String(id) !== collaboratorId;
-//         });
-//         return document.save();
-//       } else {
-//         throw new Error('No document found');
-//       }
-//     })
-//     .then(() => {
-//       return Collaborator.deleteOne({ _id: collaboratorId }, err => {
-//         if (err) {
-//           res.status(400).json({ err, message: 'Operation failed!' });
-//         } else {
-//           res.status(200).json({
-//             collaborator: 'Collaborator has been deleted',
-//             message: 'Operation successful!'
-//           });
-//         }
-//       });
-//     })
-//     .catch(err => res.status(400).json({ err, message: 'Operation failed!' }));
-// };
 collaboratorController.delete = async (req, res) => {
   const collaboratorId = req.params.id;
   try {
