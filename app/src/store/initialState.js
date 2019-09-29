@@ -1,11 +1,16 @@
 const user = {
   name: '',
   email: '',
-  token: '',
+  token: ''
+};
+
+const authentication = {
+  error: false,
   loaded: false,
-  error: false
+  toke: ''
 };
 
 export default {
-  user
+  // user,
+  authentication
 };
