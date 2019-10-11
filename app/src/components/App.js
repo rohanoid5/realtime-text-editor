@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Material-UI stuff
 import { createMuiTheme, useTheme } from '@material-ui/core/styles';
@@ -40,19 +40,38 @@ const App = () => {
       }
     });
   };
-  const muiTheme = createMuiTheme(theme);
+  const muiThemeApp = createMuiTheme(theme);
+  const muiThemeLogin = createMuiTheme({
+    palette: {
+      primary: purple,
+      secondary: green
+    }
+  });
+
+  const logOut = () => {
+    setLoggedIn(false);
+    localStorage.removeItem(TOKEN);
+  };
 
   if (isLoggedIn || localStorage.getItem(TOKEN)) {
     return (
-      <ThemeProvider theme={muiTheme}>
+      <ThemeProvider theme={muiThemeApp}>
         <CssBaseline />
         <Container maxWidth="sm">
-          <NavBar toggleDarkTheme={toggleDarkTheme} setLoggedIn={setLoggedIn} />
+          <NavBar
+            toggleDarkTheme={toggleDarkTheme}
+            logOut={logOut}
+            isDarkMode={theme.palette.type === 'dark'}
+          />
         </Container>
       </ThemeProvider>
     );
   } else {
-    return <Login setLoggedIn={setLoggedIn} />;
+    return (
+      <ThemeProvider theme={muiThemeLogin}>
+        <Login setLoggedIn={setLoggedIn} />
+      </ThemeProvider>
+    );
   }
 };
 

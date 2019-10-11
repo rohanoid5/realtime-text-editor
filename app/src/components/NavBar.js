@@ -6,7 +6,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import WbIncandescentIcon from '@material-ui/icons/WbIncandescent';
+import WbSunnyIcon from '@material-ui/icons/WbSunny';
+import Brightness2Icon from '@material-ui/icons/Brightness2';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { TOKEN } from '../util/constants';
 
@@ -37,13 +38,7 @@ const ElevationScroll = props => {
 
 const NavBar = props => {
   const classes = useStyles();
-  const { toggleDarkTheme, setLoggedIn } = props;
-
-  const logOut = () => {
-    setLoggedIn(false);
-    localStorage.removeItem(TOKEN);
-  };
-
+  const { toggleDarkTheme, isDarkMode, logOut } = props;
   return (
     <ElevationScroll {...props}>
       <AppBar>
@@ -65,7 +60,7 @@ const NavBar = props => {
             onClick={toggleDarkTheme}
             color="inherit"
           >
-            <WbIncandescentIcon />
+            {isDarkMode ? <WbSunnyIcon /> : <Brightness2Icon />}
           </IconButton>
           <IconButton
             aria-label="log out"
