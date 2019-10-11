@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { loginUser } from '../actions/authAction';
+import Login from '../components/Login';
+import { TOKEN } from '../util/constants';
 
-class Login extends Component {
+class LoginContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -11,20 +13,20 @@ class Login extends Component {
     };
   }
 
+  componentDidUpdate() {
+    const { authentication } = this.props;
+    if (authentication.token && authentication.token !== '') {
+      localStorage.setItem(TOKEN, authentication.token);
+      this.props.setLoggedIn(true);
+    }
+  }
+
   render() {
-    console.log(this.props.authentication);
     return (
-      <div>
-        Login
-        <button
-          onClick={() => {
-            console.log('Clicked');
-            this.props.loginUser('test3', 't32');
-          }}
-        >
-          CLICK TO LOGIN
-        </button>
-      </div>
+      <Login
+        loginInitiated={this.props.authentication.initiated}
+        authenticate={this.props.loginUser}
+      />
     );
   }
 }
@@ -43,4 +45,4 @@ const mapDispatchToProps = dispatch => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Login);
+)(LoginContainer);

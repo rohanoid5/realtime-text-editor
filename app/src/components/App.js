@@ -12,9 +12,11 @@ import Container from '@material-ui/core/Container';
 
 // Custom Components/Containers
 import NavBar from './NavBar';
-import Login from './Login';
+import Login from '../containers/Login';
+import { TOKEN } from '../util/constants';
 
-const App = props => {
+const App = () => {
+  const [isLoggedIn, setLoggedIn] = useState(false);
   const [theme, setTheme] = useState({
     palette: {
       type: 'dark',
@@ -39,18 +41,18 @@ const App = props => {
     });
   };
   const muiTheme = createMuiTheme(theme);
-  const isLoggedIn = false;
-  if (isLoggedIn) {
+
+  if (isLoggedIn || localStorage.getItem(TOKEN)) {
     return (
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <Container maxWidth="sm">
-          <NavBar toggleDarkTheme={toggleDarkTheme} />
+          <NavBar toggleDarkTheme={toggleDarkTheme} setLoggedIn={setLoggedIn} />
         </Container>
       </ThemeProvider>
     );
   } else {
-    return <Login />;
+    return <Login setLoggedIn={setLoggedIn} />;
   }
 };
 

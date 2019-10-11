@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import LockIcon from '@material-ui/icons/Lock';
 import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import InputLabel from '@material-ui/core/InputLabel';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -37,8 +38,40 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Login = () => {
+const Login = ({ loginInitiated, authenticate }) => {
   const classes = useStyles();
+  const [values, setValues] = useState({
+    email: '',
+    password: '',
+    showPassword: false,
+    showEmailError: false,
+    showPasswordError: false
+  });
+
+  const handleClickShowPassword = () => {
+    setValues({ ...values, showPassword: !values.showPassword });
+  };
+
+  const handleMouseDownPassword = event => {
+    event.preventDefault();
+  };
+
+  const handleChange = prop => event => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
+
+  const submitLogin = () => {
+    setValues(val => {
+      return {
+        ...val,
+        showEmailError: val.email === '',
+        showPasswordError: val.password === ''
+      };
+    });
+    if (values.email !== '' && values.password !== '')
+      authenticate(values.email, values.password);
+  };
+
   return (
     <Grid
       container
@@ -67,28 +100,37 @@ const Login = () => {
             Please enter your details below to Login
           </Typography>
           <div className={classes.margin}>
-            <FormControl fullWidth>
-              <InputLabel htmlFor="input-with-icon-adornment">
-                Email or UserID
-              </InputLabel>
+            <FormControl fullWidth error={values.showEmailError}>
+              <InputLabel htmlFor="email">Email or UserID</InputLabel>
               <Input
                 className={classes.padding}
-                id="input-with-icon-adornment"
+                id="email"
+                value={values.email}
+                onChange={handleChange('email')}
                 startAdornment={
                   <InputAdornment position="start">
                     <AccountCircle />
                   </InputAdornment>
                 }
               />
+              {values.showEmailError && (
+                <FormHelperText id="email-error-text">
+                  You can't leave this blank
+                </FormHelperText>
+              )}
             </FormControl>
-            <FormControl fullWidth className={classes.formControl}>
-              <InputLabel htmlFor="input-with-icon-adornment">
-                Password
-              </InputLabel>
+            <FormControl
+              fullWidth
+              className={classes.formControl}
+              error={values.showPasswordError}
+            >
+              <InputLabel htmlFor="password">Password</InputLabel>
               <Input
                 className={classes.padding}
-                id="input-with-icon-adornment-password"
-                type="password"
+                id="password"
+                type={values.showPassword ? 'text' : 'password'}
+                value={values.password}
+                onChange={handleChange('password')}
                 startAdornment={
                   <InputAdornment position="start">
                     <LockIcon />
@@ -96,12 +138,21 @@ const Login = () => {
                 }
                 endAdornment={
                   <InputAdornment position="end">
-                    <IconButton aria-label="toggle password visibility">
-                      {true ? <Visibility /> : <VisibilityOff />}
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                    >
+                      {values.showPassword ? <Visibility /> : <VisibilityOff />}
                     </IconButton>
                   </InputAdornment>
                 }
               />
+              {values.showPasswordError && (
+                <FormHelperText id="password-error-text">
+                  You can't leave this blank
+                </FormHelperText>
+              )}
             </FormControl>
           </div>
           <Typography className={classes.forgotPassword} component="p">
@@ -112,8 +163,10 @@ const Login = () => {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={loginInitiated}
+            onClick={submitLogin}
           >
-            Login
+            {loginInitiated ? 'Please Wait' : 'Login'}
           </Button>
         </Paper>
       </Grid>

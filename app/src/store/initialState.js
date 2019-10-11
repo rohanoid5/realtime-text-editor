@@ -5,9 +5,10 @@ const user = {
 };
 
 const authentication = {
+  initiated: false,
   error: false,
   loaded: false,
-  toke: ''
+  token: ''
 };
 
 export default {
