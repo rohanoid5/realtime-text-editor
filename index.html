@@ -54,20 +54,26 @@
     <script>
       $(function() {
         var socket = io();
+        var documentSocket = io('/dock');
+        // var documentSocket2 = io('/dock2');
+        // documentSocket.emit('server message', 'Message from client');
+        documentSocket.on('message', function(msg) {
+          console.log(msg);
+        });
         // $('form').submit(function(e) {
         //   e.preventDefault(); // prevents page reloading
         //   socket.emit('chat message', $('#m').val());
         //   $('#m').val('');
         //   return false;
         // });
-        $('#text-area').keyup(function(event) {
-          console.log(event.target.value);
-          socket.emit('chat message', event.target.value);
-        });
-        socket.on('chat message', function(msg) {
-          // $('#messages').empty();
-          $('#text-area').val(msg);
-        });
+        // $('#text-area').keyup(function(event) {
+        //   console.log(event.target.value);
+        //   socket.emit('chat message', event.target.value);
+        // });
+        // socket.on('chat message', function(msg) {
+        //   // $('#messages').empty();
+        //   $('#text-area').val(msg);
+        // });
       });
     </script>
   </head>
